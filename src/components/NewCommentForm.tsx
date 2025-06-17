@@ -8,9 +8,12 @@ type Props = {
 };
 
 export const NewCommentForm: React.FC<Props> = ({ onSubmit }) => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [body, setBody] = useState('');
+  const [formFields, setFormFields] = useState<CommentData>({
+    name: '',
+    email: '',
+    body: '',
+  });
+
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({
     name: false,
@@ -18,34 +21,36 @@ export const NewCommentForm: React.FC<Props> = ({ onSubmit }) => {
     body: false,
   });
 
-  const handleChangeName = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setErrors(currentErrors => ({ ...currentErrors, name: false }));
-    setName(event.target.value);
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setErrors(currentErrors => ({
+      ...currentErrors,
+      [event.target.name]: false,
+    }));
+    setFormFields(currentFormFields => ({
+      ...currentFormFields,
+      [event.target.name]: event.target.value,
+    }));
   };
 
-  const handleChangeEmail = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setErrors(currentErrors => ({ ...currentErrors, email: false }));
-    setEmail(event.target.value);
-  };
-
-  const handleChangeBody = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleTextArea = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setErrors(currentErrors => ({ ...currentErrors, body: false }));
-    setBody(event.target.value);
+    setFormFields(currentFormFields => ({
+      ...currentFormFields,
+      body: event.target.value,
+    }));
   };
 
   const clearForm = () => {
-    setName('');
-    setBody('');
-    setEmail('');
+    setFormFields({ name: '', email: '', body: '' });
     setErrors({ name: false, email: false, body: false });
   };
 
   const handleSubmitForm = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const newErrors: FormErrors = {
-      name: !name.trim(),
-      email: !email.trim(),
-      body: !body.trim(),
+      name: !formFields.name.trim(),
+      email: !formFields.email.trim(),
+      body: !formFields.body.trim(),
     };
 
     setErrors(newErrors);
@@ -57,9 +62,12 @@ export const NewCommentForm: React.FC<Props> = ({ onSubmit }) => {
     }
 
     setLoading(true);
-    onSubmit({ name, email, body })
+    onSubmit(formFields)
       .then(() => {
-        setBody('');
+        setFormFields(currentFormFields => ({
+          ...currentFormFields,
+          body: '',
+        }));
         setErrors({ name: false, email: false, body: false });
       })
       .finally(() => setLoading(false));
@@ -79,8 +87,8 @@ export const NewCommentForm: React.FC<Props> = ({ onSubmit }) => {
             id="comment-author-name"
             placeholder="Name Surname"
             className={cn('input', { 'is-danger': errors.name })}
-            value={name}
-            onChange={handleChangeName}
+            value={formFields.name}
+            onChange={handleInputChange}
           />
 
           <span className="icon is-small is-left">
@@ -116,8 +124,8 @@ export const NewCommentForm: React.FC<Props> = ({ onSubmit }) => {
             id="comment-author-email"
             placeholder="email@test.com"
             className={cn('input', { 'is-danger': errors.email })}
-            value={email}
-            onChange={handleChangeEmail}
+            value={formFields.email}
+            onChange={handleInputChange}
           />
 
           <span className="icon is-small is-left">
@@ -152,8 +160,8 @@ export const NewCommentForm: React.FC<Props> = ({ onSubmit }) => {
             name="body"
             placeholder="Type comment here"
             className={cn('input', { 'is-danger': errors.body })}
-            value={body}
-            onChange={handleChangeBody}
+            value={formFields.body}
+            onChange={handleTextArea}
           />
         </div>
 
