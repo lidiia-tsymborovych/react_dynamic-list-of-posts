@@ -9,7 +9,7 @@ import { User } from './entities/User';
 import { Post } from './entities/Post';
 
 import { getUsers } from './entities/User/user.service';
-import { getUserPosts } from './entities/Post/post.servise';
+import { getUserPosts } from './entities/Post/post.service';
 
 import { PostsList } from './components/PostsList';
 import { PostDetails } from './components/PostDetails';
@@ -34,6 +34,7 @@ export const App = () => {
 
   useEffect(() => {
     if (selectedUser) {
+      setSelectedPost(null);
       setErrorMessage(null);
       setLoading(true);
       getUserPosts(selectedUser.id)
@@ -97,7 +98,7 @@ export const App = () => {
             })}
           >
             <div className="tile is-child box is-success ">
-              <PostDetails post={selectedPost} />
+              {showPosts && <PostDetails post={selectedPost} />}
             </div>
           </div>
         </div>

@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Loader } from './Loader';
-// import { NewCommentForm } from './NewCommentForm';
+import { NewCommentForm } from './NewCommentForm';
 import { Post } from '../entities/Post';
-import { Comment } from '../entities/Comment';
+import { Comment, CommentData } from '../entities/Comment';
 import {
+  addComment,
   deleteComment,
   getComments,
 } from '../entities/Comment/comment.service';
@@ -17,6 +18,7 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
   const [comments, setComments] = useState<Comment[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<ErrorMessage>(null);
+  const [isFormVisible, setisFormVisible] = useState(false);
 
   useEffect(() => {
     if (post) {
@@ -31,20 +33,45 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
 
   const hasComments = comments && comments.length > 0;
   const noComments = comments && comments.length === 0;
-  const readyToShow = !loading && comments !== null;
+  const isCommentsLoaded = !loading && comments !== null;
 
   const handleDeleteComment = (commentId: Comment['id']) => {
-    deleteComment(commentId).then(() => {
-      setComments(current =>
-        current ? current.filter(comm => comm.id !== commentId) : null,
-      );
+    setErrorMessage(null);
+
+    const previousComments = comments;
+
+    setComments(current =>
+      current ? current.filter(comm => comm.id !== commentId) : null,
+    );
+
+    deleteComment(commentId).catch(() => {
+      setErrorMessage('Something went wrong!');
+      setComments(previousComments);
     });
   };
+
+  const handleSubmitForm = (data: CommentData): Promise<void> => {
+    setErrorMessage(null);
+
+    return addComment({ postId: post?.id, ...data })
+      .then(newComment => {
+        setComments(current =>
+          current ? [...current, newComment] : [newComment],
+        );
+      })
+      .catch(() => {
+        setErrorMessage('Something went wrong!');
+      });
+  };
+
+  useEffect(() => {
+    setisFormVisible(false);
+  }, [post]);
 
   return (
     <div className="content" data-cy="PostDetails">
       <div className="block">
-        <h2 data-cy="PostTitle">{post?.title}</h2>
+        <h2 data-cy="PostTitle">{`#${post?.id}: ${post?.title}`}</h2>
 
         <p data-cy="PostBody">{post?.body}</p>
       </div>
@@ -58,13 +85,13 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
           </div>
         )}
 
-        {readyToShow && noComments && (
+        {isCommentsLoaded && noComments && (
           <p className="title is-4" data-cy="NoCommentsMessage">
             No comments yet
           </p>
         )}
 
-        {readyToShow && hasComments && (
+        {isCommentsLoaded && hasComments && (
           <>
             <p className="title is-4">Comments:</p>
 
@@ -97,16 +124,19 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
           </>
         )}
 
-        {/* <button
+        {isCommentsLoaded && !isFormVisible && (
+          <button
             data-cy="WriteCommentButton"
             type="button"
             className="button is-link"
+            onClick={() => setisFormVisible(true)}
           >
             Write a comment
-          </button> */}
+          </button>
+        )}
       </div>
 
-      {/* <NewCommentForm /> */}
+      {isFormVisible && <NewCommentForm onSubmit={handleSubmitForm} />}
     </div>
   );
 };
