@@ -8,7 +8,6 @@ import {
   deleteComment,
   getComments,
 } from '../entities/Comment/comment.service';
-import { ErrorMessage } from '../entities/Error';
 
 type Props = {
   post: Post | null;
@@ -17,12 +16,12 @@ type Props = {
 export const PostDetails: React.FC<Props> = ({ post }) => {
   const [comments, setComments] = useState<Comment[] | null>(null);
   const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<ErrorMessage>(null);
+  const [errorMessage, setErrorMessage] = useState('');
   const [isFormVisible, setisFormVisible] = useState(false);
 
   useEffect(() => {
     if (post) {
-      setErrorMessage(null);
+      setErrorMessage('');
       setLoading(true);
       getComments(post.id)
         .then(setComments)
@@ -36,7 +35,7 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
   const isCommentsLoaded = !loading && comments !== null;
 
   const handleDeleteComment = (commentId: Comment['id']) => {
-    setErrorMessage(null);
+    setErrorMessage('');
 
     const previousComments = comments;
 
@@ -51,7 +50,7 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
   };
 
   const handleSubmitForm = (data: CommentData): Promise<void> => {
-    setErrorMessage(null);
+    setErrorMessage('');
 
     return addComment({ postId: post?.id, ...data })
       .then(newComment => {

@@ -15,13 +15,12 @@ import { PostsList } from './components/PostsList';
 import { PostDetails } from './components/PostDetails';
 import { UserSelector } from './components/UserSelector';
 import { Loader } from './components/Loader';
-import { ErrorMessage } from './entities/Error';
 
 export const App = () => {
   const [users, setUsers] = useState<User[] | null>(null);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [userPosts, setUserPosts] = useState<Post[] | null>(null);
-  const [errorMessage, setErrorMessage] = useState<ErrorMessage>(null);
+  const [errorMessage, setErrorMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
 
@@ -35,7 +34,7 @@ export const App = () => {
   useEffect(() => {
     if (selectedUser) {
       setSelectedPost(null);
-      setErrorMessage(null);
+      setErrorMessage('');
       setLoading(true);
       getUserPosts(selectedUser.id)
         .then(setUserPosts)
